@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Bom Ar Tasks</title>
+    <style>
+      body {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+        font-family: Arial, sans-serif;
+        background-color: #f4f4f4;
+      }
+
+      .container {
+        text-align: center;
+        background: #fff;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      }
+
+      form {
+        margin-top: 20px;
+      }
+
+      input,
+      textarea,
+      button {
+        display: block;
+        width: 100%;
+        margin: 30px 0;
+        padding: 4px;
+        font-size: 15px;
+        border: 2px solid #ccc;
+        border-radius: 6px;
+      }
+
+      button {
+        background-color: #007bff;
+        color: white;
+        border: none;
+        cursor: pointer;
+      }
+
+      button:hover {
+        background-color: #0056b3;
+      }
+
+      a {
+        display: inline-block;
+        margin-top: 15px;
+        text-decoration: none;
+        color: #007bff;
+      }
+
+      a:hover {
+        text-decoration: underline;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Adicionar Serviço</h1>
+
+      <form action="/add" method="POST">
+        <input type="text" name="title" placeholder="Title" required />
+        <textarea name="description" placeholder="Description"></textarea>
+        <input type="date" name="date" />
+        <button type="submit">Adicionar Tarefa</button>
+      </form>
+
+      <a href="{{ url_for('home.list_tasks') }}">Ver todas as tarefas</a>
+      <a href="{{ url_for('home.calendar') }}">Ver Calendário</a>
+    </div>
+  </body>
+</html>

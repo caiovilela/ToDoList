@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tarefas Concluídas</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f4f4f4;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      h1 {
+        margin-top: 20px;
+        color: #333;
+      }
+
+      .links {
+        margin: 20px 0;
+      }
+
+      .links a {
+        text-decoration: none;
+        color: #007bff;
+        margin: 0 10px;
+        font-size: 16px;
+      }
+
+      .links a:hover {
+        text-decoration: underline;
+      }
+
+      .tasks-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 20px;
+        width: 90%;
+        max-width: 1200px;
+        margin-bottom: 20px;
+      }
+
+      .task-card {
+        background: #fff;
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        padding: 20px;
+        text-align: left;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+      }
+
+      .task-card h2 {
+        margin: 0;
+        font-size: 20px;
+        color: #333;
+      }
+
+      .task-card p {
+        margin: 10px 0;
+        color: #555;
+      }
+
+      .task-card em {
+        color: #888;
+        font-size: 14px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Tarefas Concluídas</h1>
+
+    <div class="links">
+      <a href="{{ url_for('home.list_tasks') }}"
+        >Voltar para a lista de tarefas</a
+      >
+    </div>
+
+    <div class="tasks-container">
+      {% for task in tasks %}
+      <div class="task-card">
+        <h2>{{ task.title }}</h2>
+        <p>{{ task.description }}</p>
+        {% if task.date %}
+        <em>Data: {{ task.date.strftime('%d/%m/%Y') }}</em>
+        {% else %}
+        <em>Data: Não especificada</em>
+        {% endif %}
+        <br />
+        <strong>Comentário:</strong> {{ task.done_comment or "Nenhum comentário"
+        }}
+      </div>
+      {% else %}
+      <p>Nenhuma tarefa concluída encontrada.</p>
+      {% endfor %}
+    </div>
+  </body>
+</html>
