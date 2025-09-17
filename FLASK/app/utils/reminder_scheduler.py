@@ -9,13 +9,14 @@ def send_daily_reminders():
     today = datetime.utcnow().date()
     tasks = Task.query.filter(Task.date == today, Task.done == False).all()
     for task in tasks:
+        print(f"enviando para: {task.user_email}")
        
         subject = f"Lembrete: {task.title}"
         body = f"Você tem uma tarefa marcada para hoje:\n\n{task.title}\n{task.description}"
         to_email = task.user_email
-        from_email = os.environ.get("GMAIL_USER")
-        smtp_user = os.environ.get("GMAIL_USER")
-        smtp_password = os.environ.get("GMAIL_PASS")
+        from_email = "contatestebomar@gmail.com"
+        smtp_user = "contatestebomar@gmail.com"
+        smtp_password = "sdtj ynlh trby wara"
         send_email(
             subject, body, to_email, from_email,
             smtp_server="smtp.gmail.com",
