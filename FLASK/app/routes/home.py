@@ -24,7 +24,8 @@ def list_tasks():
 def add_task():
     title = request.form.get('title')
     description = request.form.get('description')
-    date_str = request.form.get('date')  
+    date_str = request.form.get('date') 
+    user_email = request.form.get("user_email") 
 
     
     if date_str:
@@ -35,7 +36,7 @@ def add_task():
     else:
         date = datetime.utcnow()  
 
-    new_task = Task(title=title, description=description, date=date)
+    new_task = Task(title=title, description=description, date=date, user_email=user_email)
     db.session.add(new_task)
     db.session.commit()
 
@@ -70,7 +71,7 @@ def delete_task(id):
     db.session.delete(task)
     db.session.commit()
 
-    # Redireciona para a lista de tarefas após excluir
+    
     return redirect(url_for('home.list_tasks'))
 
 
@@ -95,6 +96,7 @@ def list_done_tasks():
     return render_template('done_tasks.html', tasks=done_tasks)
 
 
+# esta com problemas. preciso ver isso depois
 @home_bp.route('/calendar')
 def calendar():
     tasks = Task.query.all()  
