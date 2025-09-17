@@ -9,7 +9,7 @@ def send_daily_reminders():
     today = datetime.utcnow().date()
     tasks = Task.query.filter(Task.date == today, Task.done == False).all()
     for task in tasks:
-        # Personalize conforme necessário
+       
         subject = f"Lembrete: {task.title}"
         body = f"Você tem uma tarefa marcada para hoje:\n\n{task.title}\n{task.description}"
         to_email = task.user_email
