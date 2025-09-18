@@ -20,6 +20,7 @@ def create_app():
 
     
     from app.utils.reminder_scheduler import start_scheduler
-    start_scheduler()
+    start_scheduler(app)
+    
 
     return app
