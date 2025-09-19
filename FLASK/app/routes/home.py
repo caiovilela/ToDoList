@@ -15,7 +15,7 @@ def homepage():
 
 @home_bp.route('/tasks')
 def list_tasks():
-    tasks = Task.query.all()  
+    tasks = Task.query.filter_by(done=False).all()  
     return render_template('tasks.html', tasks=tasks) 
 
 
@@ -96,10 +96,13 @@ def list_done_tasks():
     return render_template('done_tasks.html', tasks=done_tasks)
 
 
-# esta com problemas. preciso ver isso depois
+
 @home_bp.route('/calendar')
 def calendar():
-    tasks = Task.query.filter(Task.date.isnot(None)).all()  
+    tasks = Task.query\
+            .filter(Task.date.isnot(None))\
+            .filter_by(done=False)\
+            .all()
     events = [
         {
             "title": task.title,
