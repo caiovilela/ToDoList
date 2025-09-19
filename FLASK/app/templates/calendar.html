@@ -4,58 +4,54 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Calendário de Tarefas</title>
+
+    <!-- FullCalendar CSS -->
     <link
       href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.css"
       rel="stylesheet"
     />
+
     <style>
       body {
-        font-family: Arial, sans-serif;
-        background-color: #f4f4f4;
         margin: 0;
         padding: 0;
+        font-family: Arial, sans-serif;
         display: flex;
-        flex-direction: column;
+        justify-content: center;
         align-items: center;
+        height: 100vh;
+        background: #f4f4f4;
       }
-
-      h1 {
-        margin: 20px 0;
-        color: #333;
-      }
-
       #calendar {
-        max-width: 90%;
-        margin: 20px auto;
+        width: 90%;
+        max-width: 800px;
         background: #fff;
         padding: 20px;
         border-radius: 8px;
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        height: 600px;
       }
     </style>
   </head>
   <body>
-    <h1>Calendário de Tarefas</h1>
     <div id="calendar"></div>
 
-    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.js"></script>
+    <!-- FullCalendar Bundle (core + plugins + locales) -->
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
+
     <script>
       document.addEventListener("DOMContentLoaded", function () {
-        const calendarEl = document.getElementById("calendar");
-        const calendar = new Calendar.Calendar(calendarEl, {
-          initialView: "dayGridMonth",
-          locale: "pt-br",
-          events: JSON.parse("{{ events|tojson|safe }}"),
-          eventClick: function (info) {
-            alert(
-              "Tarefa: " +
-                info.event.title +
-                "\nDescrição: " +
-                info.event.extendedProps.description
-            );
-          },
-        });
-        calendar.render();
+        // Converte a lista Python em JSON para o JS
+        var eventos = {{ events | tojson }};
+
+        new FullCalendar.Calendar(
+          document.getElementById("calendar"),
+          {
+            initialView: "dayGridMonth",
+            locale: "pt-br",
+            events: eventos
+          }
+        ).render();
       });
     </script>
   </body>

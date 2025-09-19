@@ -99,13 +99,13 @@ def list_done_tasks():
 # esta com problemas. preciso ver isso depois
 @home_bp.route('/calendar')
 def calendar():
-    tasks = Task.query.all()  
+    tasks = Task.query.filter(Task.date.isnot(None)).all()  
     events = [
         {
             "title": task.title,
             "start": task.date.strftime('%Y-%m-%d') if task.date else None,
             "description": task.description
         }
-        for task in tasks if task.date  
+        for task in tasks   
     ]
     return render_template('calendar.html', events=events)
