@@ -1,13 +1,12 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
-# Importamos 'db' e 'datetime' pois são necessários fora das rotas ou são nativos:
 from app import db 
 from datetime import datetime
 from flask_login import login_user, login_required, logout_user, current_user
-# NOTA: Todas as outras extensões (Bcrypt, Task, User) são importadas DENTRO das rotas.
+
 
 home_bp = Blueprint('home', __name__)
 
-# --- ROTAS DE TAREFAS (PROTEGIDAS E FILTRADAS) ---
+
 
 @home_bp.route('/')
 @login_required 
@@ -149,7 +148,7 @@ def register():
         email = request.form.get('email')
         password = request.form.get('password')
         
-        # A consulta ao DB funciona aqui:
+        
         if User.query.filter_by(email=email).first():
             return redirect(url_for('home.register')) 
 
@@ -182,7 +181,7 @@ def login():
             login_user(user)
             return redirect(url_for('home.homepage')) 
         else:
-            # Você pode adicionar uma flash message de erro aqui
+            
             pass 
 
     return render_template('login.html')
