@@ -1,31 +1,28 @@
 import os 
 from flask import Flask
-from flask_sqlalchemy import SQLAlchemy
-from flask_migrate import Migrate
-from flask_login import LoginManager 
-from flask_bcrypt import Bcrypt
+# REMOVA AS DEFINIÇÕES ANTIGAS (db = SQLAlchemy(), etc.)
 
-db = SQLAlchemy()
-migrate = Migrate()
-login_manager = LoginManager() 
-bcrypt = Bcrypt()
+# IMPORTE AS INSTÂNCIAS DO SEU ARQUIVO DE EXTENSÕES
+from app.extensions import db, migrate, login_manager, bcrypt 
 
-
+# Define o caminho absoluto para o diretório deste arquivo
 basedir = os.path.abspath(os.path.dirname(__file__)) 
 
 def create_app():
     app = Flask(__name__)
 
     app.config['SECRET_KEY'] = 'sua_chave_secreta'
+    # Esta linha agora usa o 'basedir' definido globalmente
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'tasks.db') 
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
+    # INICIALIZE AS INSTÂNCIAS IMPORTADAS
     db.init_app(app)
     migrate.init_app(app, db)
     login_manager.init_app(app)
     bcrypt.init_app(app)
 
-    
+    # IMPORTAÇÃO TARDIA (Os modelos agora usam o 'db' correto)
     from app.models.task import User, Task  
     
     login_manager.login_view ='home.login'
