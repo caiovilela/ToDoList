@@ -1,16 +1,16 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from datetime import datetime
 from flask_login import login_user, login_required, logout_user, current_user
-from flask import current_app # Adiciona a importação de current_app
+from flask import current_app 
 
 home_bp = Blueprint('home', __name__)
 
-# --- FUNÇÃO HELPER PARA ACESSAR DB ---
+
 def get_db():
-    # Retorna a instância 'db' correta ligada ao app
+   
     return current_app.extensions['sqlalchemy']
 
-# --- ROTAS DE TAREFAS (Acesso via get_db()) ---
+
 
 @home_bp.route('/')
 @login_required 
@@ -18,7 +18,7 @@ def homepage():
     from app.models.task import Task 
     db_instance = get_db()
     
-    # <--- CORRIGIDO: Substituído Task.query.filter_by(...).all()
+    
     stmt = db_instance.select(Task).filter_by(user_id=current_user.id)
     task = db_instance.session.scalars(stmt).all() 
     
@@ -31,7 +31,7 @@ def list_tasks():
     from app.models.task import Task
     db_instance = get_db()
     
-    # <--- CORRIGIDO: Substituído Task.query.filter_by(...).all()
+    
     stmt = db_instance.select(Task).filter_by(user_id=current_user.id, done=False)
     tasks = db_instance.session.scalars(stmt).all() 
     
@@ -44,14 +44,15 @@ def add_task():
     from app.models.task import Task
     db_instance = get_db()
     
-    # <--- CORRIGIDO: Variáveis movidas para ANTES de serem usadas
+    
     title = request.form.get('title')
     description = request.form.get('description')
-    date_str = request.form.get('date') # Corrigido de 'date' para 'date_str'
+    date_str = request.form.get('date')
+    user_email = request.form.get('user_email')
     
-    if date_str: # Corrigido de 'date' para 'date_str'
+    if date_str: 
         try:
-            date = datetime.strptime(date_str, '%Y-%m-%d') # Corrigido de 'date' para 'date_str'
+            date = datetime.strptime(date_str, '%Y-%m-%d') 
         except ValueError:
             date = datetime.utcnow()
     else:
@@ -59,7 +60,8 @@ def add_task():
 
     new_task = Task(title=title, 
                     description=description, 
-                    date=date, 
+                    date=date,
+                    user_email=user_email,
                     user_id=current_user.id) 
     
     db_instance.session.add(new_task) 
@@ -73,7 +75,7 @@ def edit_task(id):
     from app.models.task import Task
     db_instance = get_db()
     
-    # <--- CORRIGIDO: Substituído Task.query.filter_by(...).first()
+    
     stmt = db_instance.select(Task).filter_by(id=id, user_id=current_user.id)
     task = db_instance.session.scalar(stmt)
 
@@ -81,7 +83,7 @@ def edit_task(id):
         return "Tarefa não encontrada ou acesso não autorizado", 403 
 
     if request.method == 'POST':
-        # <--- CORRIGIDO: Adicionada lógica de atualização que estava faltando
+        
         task.title = request.form.get('title')
         task.description = request.form.get('description')
         date_str = request.form.get('date')
@@ -90,7 +92,7 @@ def edit_task(id):
             try:
                 task.date = datetime.strptime(date_str, '%Y-%m-%d')
             except ValueError:
-                task.date = None # ou mantenha a data antiga
+                task.date = None 
         else:
             task.date = None
 
@@ -105,7 +107,7 @@ def delete_task(id):
     from app.models.task import Task
     db_instance = get_db()
     
-    # <--- CORRIGIDO: Substituído Task.query.filter_by(...).first()
+    
     stmt = db_instance.select(Task).filter_by(id=id, user_id=current_user.id)
     task = db_instance.session.scalar(stmt)
     
@@ -117,7 +119,7 @@ def delete_task(id):
     
     return redirect(url_for('home.list_tasks'))
 
-# --- ROTAS QUE ESTAVAM FALTANDO (Recuperei da nossa conversa anterior e corrigi) ---
+
 
 @home_bp.route('/done/<int:id>', methods=['GET', 'POST'])
 @login_required 
@@ -125,7 +127,7 @@ def mark_task_done(id):
     from app.models.task import Task
     db_instance = get_db()
     
-    # <--- CORRIGIDO: Substituído Task.query.filter_by(...).first()
+    
     stmt = db_instance.select(Task).filter_by(id=id, user_id=current_user.id)
     task = db_instance.session.scalar(stmt) 
 
@@ -146,7 +148,7 @@ def list_done_tasks():
     from app.models.task import Task
     db_instance = get_db()
     
-    # <--- CORRIGIDO: Substituído Task.query.filter_by(...).all()
+    
     stmt = db_instance.select(Task).filter_by(user_id=current_user.id, done=True)
     done_tasks = db_instance.session.scalars(stmt).all()
     
@@ -158,7 +160,7 @@ def calendar():
     from app.models.task import Task
     db_instance = get_db()
     
-    # <--- CORRIGIDO: Substituído Task.query...
+    
     stmt = db_instance.select(Task).filter_by(user_id=current_user.id, done=False).filter(Task.date.isnot(None))
     tasks = db_instance.session.scalars(stmt).all()
     
@@ -173,7 +175,7 @@ def calendar():
     return render_template('calendar.html', events=events)
 
 
-# --- ROTAS DE AUTENTICAÇÃO (Onde o erro estava!) ---
+
 
 @home_bp.route('/register', methods=['GET', 'POST'])
 def register():
@@ -188,7 +190,7 @@ def register():
         email = request.form.get('email')
         password = request.form.get('password')
         
-        # <--- CORRIGIDO: Substituído User.query.filter_by(...).first()
+      
         stmt = db_instance.select(User).filter_by(email=email)
         user_exists = db_instance.session.scalar(stmt)
         
@@ -219,7 +221,7 @@ def login():
         email = request.form.get('email')
         password = request.form.get('password')
 
-        # <--- CORRIGIDO: Substituído User.query.filter_by(...).first()
+       
         stmt = db_instance.select(User).filter_by(email=email)
         user = db_instance.session.scalar(stmt)
 
