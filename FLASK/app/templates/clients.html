@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Meus Clientes</title>
+  </head>
+  <body>
+    <h1>Meus Clientes</h1>
+
+    <a href="{{ url_for('home.add_client') }}">Adicionar Novo Cliente</a>
+    <hr />
+
+    <ul>
+      {% for client in clients %}
+      <li>
+        <strong>{{ client.name }}</strong>
+        <br />
+        Telefone: {{ client.phone or 'Não informado' }}
+        <br />
+        Endereço: {{ client.address or 'Não informado' }}
+      </li>
+      <hr />
+      {% else %}
+      <li>Nenhum cliente cadastrado ainda.</li>
+      {% endfor %}
+    </ul>
+
+    <br />
+    <a href="{{ url_for('home.homepage') }}">Voltar para a Home</a>
+  </body>
+</html>

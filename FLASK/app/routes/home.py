@@ -15,14 +15,18 @@ def get_db():
 @home_bp.route('/')
 @login_required 
 def homepage():
-    from app.models.task import Task 
+    from app.models.task import Task, Client 
     db_instance = get_db()
     
+  
+    stmt_tasks = db_instance.select(Task).filter_by(user_id=current_user.id)
+    tasks = db_instance.session.scalars(stmt_tasks).all() 
+
+    stmt_clients = db_instance.select(Client).filter_by(owner=current_user).order_by(Client.name)
+    clients = db_instance.session.scalars(stmt_clients).all()
     
-    stmt = db_instance.select(Task).filter_by(user_id=current_user.id)
-    task = db_instance.session.scalars(stmt).all() 
-    
-    return render_template('home.html', task=task)
+
+    return render_template('home.html', tasks=tasks, clients=clients)
 
 
 @home_bp.route('/tasks')
@@ -44,15 +48,18 @@ def add_task():
     from app.models.task import Task
     db_instance = get_db()
     
-    
     title = request.form.get('title')
     description = request.form.get('description')
     date_str = request.form.get('date')
-    user_email = request.form.get('user_email')
+    client_id = request.form.get('client_id')
+
+    if client_id == "":
+        client_id = None
     
-    if date_str: 
+
+    if date_str:
         try:
-            date = datetime.strptime(date_str, '%Y-%m-%d') 
+            date = datetime.strptime(date_str, '%Y-%m-%d')
         except ValueError:
             date = datetime.utcnow()
     else:
@@ -60,9 +67,9 @@ def add_task():
 
     new_task = Task(title=title, 
                     description=description, 
-                    date=date,
-                    user_email=user_email,
-                    user_id=current_user.id) 
+                    date=date, 
+                    user_id=current_user.id,
+                    client_id=client_id) 
     
     db_instance.session.add(new_task) 
     db_instance.session.commit()
@@ -175,6 +182,43 @@ def calendar():
     return render_template('calendar.html', events=events)
 
 
+@home_bp.route('/clients')
+@login_required
+def list_clients():
+    from app.models.task import Client
+    db_instance = get_db()
+    stmt = db_instance.select(Client).filter_by(owner=current_user)
+    clients = db_instance.session.scalars(stmt).all()
+
+    return render_template('clients.html', clients=clients)
+
+
+
+
+
+@home_bp.route('/add_client', methods=['GET', 'POST'])
+@login_required
+def add_client():
+    from app.models.task import Client
+    db_instance = get_db()
+    
+    if request.method == 'POST':
+        
+        name = request.form.get('name')
+        phone = request.form.get('phone')
+        address = request.form.get('address')
+        
+      
+        new_client = Client(name=name, 
+                            phone=phone, 
+                            address=address, 
+                            owner=current_user) 
+        
+        db_instance.session.add(new_client)
+        db_instance.session.commit()
+        
+        return redirect(url_for('home.list_clients'))
+    return render_template('add_client.html')
 
 
 @home_bp.route('/register', methods=['GET', 'POST'])

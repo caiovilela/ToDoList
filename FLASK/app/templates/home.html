@@ -29,6 +29,7 @@
 
       input,
       textarea,
+      select,
       button {
         display: block;
         width: 100%;
@@ -37,6 +38,11 @@
         font-size: 15px;
         border: 2px solid #ccc;
         border-radius: 6px;
+      }
+
+      select {
+        height: 35px;
+        background-color: white;
       }
 
       button {
@@ -60,6 +66,25 @@
       a:hover {
         text-decoration: underline;
       }
+
+      .task-list {
+        list-style: none;
+        padding: 0;
+        margin: 20px 0;
+        text-align: left;
+      }
+
+      .task-list li {
+        background: #f8f9fa;
+        margin: 10px 0;
+        padding: 15px;
+        border-radius: 5px;
+        border: 1px solid #dee2e6;
+      }
+
+      .task-list small {
+        color: #6c757d;
+      }
     </style>
   </head>
   <body>
@@ -76,8 +101,38 @@
           placeholder="email do cliente"
           required
         />
-        <button type="submit">Adicionar Tarefa</button>
+
+        <div>
+          <label for="client_id">Cliente:</label>
+          <select name="client_id" id="client_id">
+            <option value="">-- Serviço Avulso (Sem Cliente) --</option>
+            {% for client in clients %}
+            <option value="{{ client.id }}">{{ client.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <br />
+        <button type="submit">Adicionar Serviço</button>
       </form>
+
+      {% if tasks %}
+      <h2>Serviços Recentes</h2>
+      <ul class="task-list">
+        {% for task in tasks %}
+        <li>
+          <strong>{{ task.title }}</strong>
+          {% if task.client %}
+          <br />
+          <small>Cliente: {{ task.client.name }}</small>
+          {% else %}
+          <br />
+          <small>Cliente: (Serviço Avulso)</small>
+          {% endif %}
+        </li>
+        {% endfor %}
+      </ul>
+      {% endif %}
 
       <a href="{{ url_for('home.list_tasks') }}">Ver todas as tarefas</a>
       <a href="{{ url_for('home.calendar') }}">Ver Calendário</a>
