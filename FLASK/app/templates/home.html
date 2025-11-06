@@ -1,141 +1,114 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Bom Ar Tasks</title>
-    <style>
-      body {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        height: 100vh;
-        margin: 0;
-        font-family: Arial, sans-serif;
-        background-color: #f4f4f4;
-      }
+{% extends 'base.html' %} {% block title %}Home - Serviços{% endblock %} {%
+block content %}
+<style>
+  /* Scoped styles for the home content */
+  .container {
+    max-width: 700px;
+    margin: 20px auto;
+    text-align: center;
+  }
 
-      .container {
-        text-align: center;
-        background: #fff;
-        padding: 20px;
-        border-radius: 8px;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-      }
+  form {
+    margin-top: 10px;
+  }
 
-      form {
-        margin-top: 20px;
-      }
+  input,
+  textarea,
+  select,
+  button {
+    display: block;
+    width: 100%;
+    margin: 12px 0;
+    padding: 6px;
+    font-size: 15px;
+    border: 2px solid #ccc;
+    border-radius: 6px;
+  }
 
-      input,
-      textarea,
-      select,
-      button {
-        display: block;
-        width: 100%;
-        margin: 30px 0;
-        padding: 4px;
-        font-size: 15px;
-        border: 2px solid #ccc;
-        border-radius: 6px;
-      }
+  select {
+    height: 35px;
+    background-color: white;
+  }
 
-      select {
-        height: 35px;
-        background-color: white;
-      }
+  button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    cursor: pointer;
+  }
 
-      button {
-        background-color: #007bff;
-        color: white;
-        border: none;
-        cursor: pointer;
-      }
+  button:hover {
+    background-color: #0056b3;
+  }
 
-      button:hover {
-        background-color: #0056b3;
-      }
+  .task-list {
+    list-style: none;
+    padding: 0;
+    margin: 20px 0;
+    text-align: left;
+  }
 
-      a {
-        display: inline-block;
-        margin-top: 15px;
-        text-decoration: none;
-        color: #007bff;
-      }
+  .task-list li {
+    background: #f8f9fa;
+    margin: 10px 0;
+    padding: 15px;
+    border-radius: 5px;
+    border: 1px solid #dee2e6;
+  }
 
-      a:hover {
-        text-decoration: underline;
-      }
+  .task-list small {
+    color: #6c757d;
+  }
+</style>
 
-      .task-list {
-        list-style: none;
-        padding: 0;
-        margin: 20px 0;
-        text-align: left;
-      }
+<div class="container">
+  <h1>Adicionar Serviço</h1>
 
-      .task-list li {
-        background: #f8f9fa;
-        margin: 10px 0;
-        padding: 15px;
-        border-radius: 5px;
-        border: 1px solid #dee2e6;
-      }
+  <form action="{{ url_for('home.add_task') }}" method="POST">
+    <input type="text" name="title" placeholder="Titulo" required />
+    <textarea name="description" placeholder="Descrição"></textarea>
+    <input type="date" name="date" />
+    <input
+      type="email"
+      name="user_email"
+      placeholder="email do cliente"
+      required
+    />
 
-      .task-list small {
-        color: #6c757d;
-      }
-    </style>
-  </head>
-  <body>
-    <div class="container">
-      <h1>Adicionar Serviço</h1>
-
-      <form action="/add" method="POST">
-        <input type="text" name="title" placeholder="Titulo" required />
-        <textarea name="description" placeholder="Descrição"></textarea>
-        <input type="date" name="date" />
-        <input
-          type="email"
-          name="user_email"
-          placeholder="email do cliente"
-          required
-        />
-
-        <div>
-          <label for="client_id">Cliente:</label>
-          <select name="client_id" id="client_id">
-            <option value="">-- Serviço Avulso (Sem Cliente) --</option>
-            {% for client in clients %}
-            <option value="{{ client.id }}">{{ client.name }}</option>
-            {% endfor %}
-          </select>
-        </div>
-
-        <br />
-        <button type="submit">Adicionar Serviço</button>
-      </form>
-
-      {% if tasks %}
-      <h2>Serviços Recentes</h2>
-      <ul class="task-list">
-        {% for task in tasks %}
-        <li>
-          <strong>{{ task.title }}</strong>
-          {% if task.client %}
-          <br />
-          <small>Cliente: {{ task.client.name }}</small>
-          {% else %}
-          <br />
-          <small>Cliente: (Serviço Avulso)</small>
-          {% endif %}
-        </li>
+    <div>
+      <label for="client_id">Cliente:</label>
+      <select name="client_id" id="client_id">
+        <option value="">-- Serviço Avulso (Sem Cliente) --</option>
+        {% for client in clients %}
+        <option value="{{ client.id }}">{{ client.name }}</option>
         {% endfor %}
-      </ul>
-      {% endif %}
-
-      <a href="{{ url_for('home.list_tasks') }}">Ver todas as tarefas</a>
-      <a href="{{ url_for('home.calendar') }}">Ver Calendário</a>
+      </select>
     </div>
-  </body>
-</html>
+
+    <br />
+    <button type="submit">Adicionar Serviço</button>
+  </form>
+
+  {% if tasks %}
+  <h2>Serviços Recentes</h2>
+  <ul class="task-list">
+    {% for task in tasks %}
+    <li>
+      <strong>{{ task.title }}</strong>
+      {% if task.client %}
+      <br />
+      <small>Cliente: {{ task.client.name }}</small>
+      {% else %}
+      <br />
+      <small>Cliente: (Serviço Avulso)</small>
+      {% endif %}
+    </li>
+    {% endfor %}
+  </ul>
+  {% endif %}
+
+  <a href="{{ url_for('home.list_tasks') }}">Ver todas as tarefas</a>
+  <a href="{{ url_for('home.calendar') }}">Ver Calendário</a>
+</div>
+
+{% endblock %}

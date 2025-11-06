@@ -1,0 +1,34 @@
+{% extends "base.html" %} {% block title %}Detalhes de {{ client.name }}{%
+endblock %} {% block content %}
+
+<h1>{{ client.name }}</h1>
+<p><strong>Telefone:</strong> {{ client.phone or 'Não informado' }}</p>
+<p><strong>Endereço:</strong> {{ client.address or 'Não informado' }}</p>
+<hr />
+
+<h2>Histórico de Serviços</h2>
+
+<ul>
+  {% for task in client.tasks %}
+  <li>
+    <strong>{{ task.title }}</strong>
+    <br />
+    Data: {{ task.date.strftime('%d/%m/%Y') if task.date else 'Não definida' }}
+    <br />
+
+    <strong>Status: {{ task.status }}</strong>
+    <br />
+
+    (<a href="{{ url_for('home.edit_task', id=task.id) }}">Ver/Editar Serviço</a
+    >)
+  </li>
+  <br />
+  {% else %}
+  <li>Nenhum serviço registrado para este cliente.</li>
+  {% endfor %}
+</ul>
+
+<br />
+<a href="{{ url_for('home.list_clients') }}">Voltar para Lista de Clientes</a>
+
+{% endblock %}

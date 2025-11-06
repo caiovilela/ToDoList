@@ -23,7 +23,7 @@ class Task(db.Model):
     title = db.Column(db.String(100), nullable=False)
     description = db.Column(db.String(200), nullable=True)
     date = db.Column(db.DateTime, nullable=True) 
-    done = db.Column(db.Boolean, default=False)
+    status = db.Column(db.String(50), nullable=False, default='Agendado')
     done_comment = db.Column(db.String(300), nullable=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     client_id = db.Column(db.Integer, db.ForeignKey('client.id'), nullable=True) 

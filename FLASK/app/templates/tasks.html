@@ -1,172 +1,86 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Lista de Tarefas</title>
-    <style>
-      body {
-        font-family: Arial, sans-serif;
-        background-color: #f4f4f4;
-        margin: 0;
-        padding: 0;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-      }
+{% extends 'base.html' %} {% block title %}Lista de Serviços{% endblock %} {%
+block content %}
+<style>
+  .tasks-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+    width: 90%;
+    max-width: 1200px;
+    margin: 20px auto 40px;
+  }
 
-      h1 {
-        margin-top: 20px;
-        color: #333;
-      }
+  .task-card {
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    text-align: left;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
 
-      .links {
-        margin: 20px 0;
-      }
+  .task-card h2 {
+    margin: 0 0 8px 0;
+  }
+  .task-card p {
+    margin: 0 0 8px 0;
+    color: #555;
+  }
+  .links {
+    text-align: center;
+    margin: 20px 0;
+  }
+  .links a {
+    margin: 0 10px;
+  }
+</style>
 
-      .links a {
-        text-decoration: none;
-        color: #007bff;
-        margin: 0 10px;
-        font-size: 16px;
-      }
+<h1 style="text-align: center; margin-top: 20px">Serviços Pendentes</h1>
 
-      .links a:hover {
-        text-decoration: underline;
-      }
+<div class="links">
+  <a href="{{ url_for('home.homepage') }}">Voltar para a página principal</a>
+  <a href="{{ url_for('home.list_done_tasks') }}">Ver Serviços Concluídos</a>
+  <a href="{{ url_for('home.calendar') }}">Ver Calendário</a>
+</div>
 
-      .tasks-container {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-        gap: 20px;
-        width: 90%;
-        max-width: 1200px;
-        margin-bottom: 20px;
-      }
+<div class="tasks-container">
+  {% for task in tasks %}
+  <div class="task-card">
+    <h2>{{ task.title }}</h2>
+    <p>{{ task.description }}</p>
+    {% if task.date %}
+    <em>Data: {{ task.date.strftime('%d/%m/%Y') }}</em>
+    {% else %}
+    <em>Data: Não especificada</em>
+    {% endif %}
+    <br />
 
-      .task-card {
-        background: #fff;
-        border-radius: 8px;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        padding: 20px;
-        text-align: left;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-      }
-
-      .task-card h2 {
-        margin: 0;
-        font-size: 20px;
-        color: #333;
-      }
-
-      .task-card p {
-        margin: 10px 0;
-        color: #555;
-      }
-
-      .task-card em {
-        color: #888;
-        font-size: 14px;
-      }
-
-      .task-card .buttons {
-        margin-top: 15px;
-        display: flex;
-        justify-content: space-between;
-      }
-
-      .task-card .buttons a,
-      .task-card .buttons button {
-        text-decoration: none;
-        padding: 10px 15px;
-        font-size: 14px;
-        border-radius: 4px;
-        border: none;
-        cursor: pointer;
-        transition: background-color 0.3s ease;
-      }
-
-      .task-card .buttons a {
-        background-color: #007bff;
-        color: white;
-      }
-
-      .task-card .buttons a:hover {
-        background-color: #0056b3;
-      }
-
-      .task-card .buttons button {
-        background-color: #dc3545;
-        color: white;
-      }
-
-      .task-card .buttons button:hover {
-        background-color: #a71d2a;
-      }
-
-      .task-card .buttons .delete-button {
-        background-color: #dc3545;
-        color: white;
-        text-decoration: none;
-        padding: 10px 15px;
-        font-size: 14px;
-        border-radius: 4px;
-        border: none;
-        cursor: pointer;
-        transition: background-color 0.3s ease;
-      }
-
-      .task-card .buttons .delete-button:hover {
-        background-color: #a71d2a;
-      }
-    </style>
-  </head>
-  <body>
-    <h1>Lista de Tarefas</h1>
-
-    <div class="links">
-      <a href="{{ url_for('home.homepage') }}"
-        >Voltar para a página principal</a
+    <strong>Status:</strong> {{ task.status }}
+    <div class="buttons" style="margin-top: 12px; display: flex; gap: 8px">
+      <a href="{{ url_for('home.edit_task', id=task.id) }}"
+        >Editar / Mudar Status</a
       >
-      <a href="{{ url_for('home.list_done_tasks') }}">Ver Tarefas Concluídas</a>
-      <a href="{{ url_for('home.calendar') }}">Ver Calendário</a>
-    </div>
 
-    <div class="tasks-container">
-      {% for task in tasks %}
-      <div class="task-card">
-        <h2>{{ task.title }}</h2>
-        <p>{{ task.description }}</p>
-        {% if task.date %}
-        <em>Data: {{ task.date.strftime('%d/%m/%Y') }}</em>
-        {% else %}
-        <em>Data: Não especificada</em>
-        {% endif %}
-        <br />
-        {% if task.done %}
-        <strong>Status:</strong> Concluída
-        <br />
-        <strong>Comentário:</strong> {{ task.done_comment or "Nenhum comentário"
-        }} {% else %} <strong>Status:</strong> Pendente {% endif %}
-        <div class="buttons">
-          {% if not task.done %}
-          <a href="{{ url_for('home.mark_task_done', id=task.id) }}"
-            >Marcar como Concluída</a
-          >
-          {% endif %}
-          <a href="{{ url_for('home.edit_task', id=task.id) }}">Editar</a>
-          <a
-            href="{{ url_for('home.delete_task', id=task.id) }}"
-            class="delete-button"
-            >Excluir</a
-          >
-        </div>
-      </div>
-      {% else %}
-      <p>Nenhuma tarefa encontrada.</p>
-      {% endfor %}
+      <a
+        href="{{ url_for('home.delete_task', id=task.id) }}"
+        style="
+          background: #dc3545;
+          color: #fff;
+          padding: 8px 10px;
+          border-radius: 4px;
+          text-decoration: none;
+        "
+        >Excluir</a
+      >
+         
     </div>
-  </body>
-</html>
+     
+  </div>
+    {% else %}  
+  <p style="text-align: center">Nenhum serviço pendente encontrado.</p>
+  {% endfor %}
+</div>
+
+{% endblock %}

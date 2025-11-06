@@ -2,6 +2,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash
 from datetime import datetime
 from flask_login import login_user, login_required, logout_user, current_user
 from flask import current_app 
+from sqlalchemy import not_
 
 home_bp = Blueprint('home', __name__)
 
@@ -34,10 +35,12 @@ def homepage():
 def list_tasks():
     from app.models.task import Task
     db_instance = get_db()
-    
-    
-    stmt = db_instance.select(Task).filter_by(user_id=current_user.id, done=False)
-    tasks = db_instance.session.scalars(stmt).all() 
+    from sqlalchemy import not_
+    stmt = db_instance.select(Task).filter(
+        Task.user_id == current_user.id,
+        not_(Task.status.in_(['Concluído', 'Cancelado']))
+    )
+    tasks = db_instance.session.scalars(stmt).all()
     
     return render_template('tasks.html', tasks=tasks) 
 
@@ -74,6 +77,7 @@ def add_task():
     db_instance.session.add(new_task) 
     db_instance.session.commit()
 
+    flash('Serviço adicionado com sucesso.', 'success')
     return redirect(url_for('home.homepage'))
 
 @home_bp.route('/edit/<int:id>', methods=['GET', 'POST'])
@@ -103,7 +107,10 @@ def edit_task(id):
         else:
             task.date = None
 
+        task.status=request.form.get('status')
+
         db_instance.session.commit()
+        flash('Serviço atualizado com sucesso.', 'success')
         return redirect(url_for('home.homepage'))
 
     return render_template('edit.html', task=task)
@@ -123,31 +130,11 @@ def delete_task(id):
         
     db_instance.session.delete(task)
     db_instance.session.commit()
-    
+    flash('Serviço removido com sucesso.', 'success')
     return redirect(url_for('home.list_tasks'))
 
 
 
-@home_bp.route('/done/<int:id>', methods=['GET', 'POST'])
-@login_required 
-def mark_task_done(id):
-    from app.models.task import Task
-    db_instance = get_db()
-    
-    
-    stmt = db_instance.select(Task).filter_by(id=id, user_id=current_user.id)
-    task = db_instance.session.scalar(stmt) 
-
-    if not task:
-        return "Tarefa não encontrada ou acesso não autorizado", 403 
-
-    if request.method == 'POST':
-        task.done = True
-        task.done_comment = request.form.get('done_comment') 
-        db_instance.session.commit()
-        return redirect(url_for('home.list_tasks'))
-
-    return render_template('done.html', task=task)
 
 @home_bp.route('/tasks/done')
 @login_required 
@@ -156,10 +143,12 @@ def list_done_tasks():
     db_instance = get_db()
     
     
-    stmt = db_instance.select(Task).filter_by(user_id=current_user.id, done=True)
+    stmt = db_instance.select(Task).filter_by(user_id=current_user.id, status='Concluído')
     done_tasks = db_instance.session.scalars(stmt).all()
     
     return render_template('done_tasks.html', tasks=done_tasks)
+
+
 
 @home_bp.route('/calendar')
 @login_required 
@@ -167,9 +156,13 @@ def calendar():
     from app.models.task import Task
     db_instance = get_db()
     
-    
-    stmt = db_instance.select(Task).filter_by(user_id=current_user.id, done=False).filter(Task.date.isnot(None))
+    stmt = db_instance.select(Task).filter(
+        Task.user_id == current_user.id,
+        not_(Task.status.in_(['Concluído', 'Cancelado'])), 
+        Task.date.isnot(None) 
+    )
     tasks = db_instance.session.scalars(stmt).all()
+    
     
     events = [
         {
@@ -192,6 +185,22 @@ def list_clients():
 
     return render_template('clients.html', clients=clients)
 
+
+@home_bp.route('/client/<int:client_id>')
+@login_required
+def client_detail(client_id):
+
+    from app.models.task import Client 
+    db_instance = get_db()
+    
+    stmt = db_instance.select(Client).filter_by(id=client_id, owner=current_user)
+    client = db_instance.session.scalar(stmt)
+    
+    if not client:
+        flash('Cliente não encontrado ou acesso não autorizado.', 'danger')
+        return redirect(url_for('home.list_clients'))
+
+    return render_template('client_detail.html', client=client)
 
 
 
@@ -216,7 +225,7 @@ def add_client():
         
         db_instance.session.add(new_client)
         db_instance.session.commit()
-        
+        flash('Cliente adicionado com sucesso.', 'success')
         return redirect(url_for('home.list_clients'))
     return render_template('add_client.html')
 
@@ -238,17 +247,17 @@ def register():
         stmt = db_instance.select(User).filter_by(email=email)
         user_exists = db_instance.session.scalar(stmt)
         
-        if user_exists: 
-            return redirect(url_for('home.register')) 
+        if user_exists:
+            flash('Já existe um usuário com esse e-mail.', 'danger')
+            return redirect(url_for('home.register'))
 
         hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
 
         new_user = User(email=email, password=hashed_password)
         db_instance.session.add(new_user) 
         db_instance.session.commit()
-
+        flash('Cadastro realizado com sucesso. Faça login.', 'success')
         return redirect(url_for('home.login')) 
-        
     return render_template('register.html') 
 
 
@@ -271,9 +280,11 @@ def login():
 
         if user and bcrypt.check_password_hash(user.password, password):
             login_user(user)
+            flash('Login realizado com sucesso.', 'success')
             return redirect(url_for('home.homepage')) 
         else:
-            pass 
+            flash('E-mail ou senha inválidos.', 'danger')
+            return render_template('login.html')
 
     return render_template('login.html')
 
@@ -281,4 +292,5 @@ def login():
 @login_required
 def logout():
     logout_user()
+    flash('Você saiu do sistema.', 'info')
     return redirect(url_for('home.login'))

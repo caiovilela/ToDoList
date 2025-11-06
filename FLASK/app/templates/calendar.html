@@ -1,58 +1,38 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Calendário de Tarefas</title>
+{% extends 'base.html' %} {% block title %}Calendário de Tarefas{% endblock %}
+{% block content %}
+<!-- FullCalendar CSS -->
+<link
+  href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.css"
+  rel="stylesheet"
+/>
+<div
+  id="calendar"
+  style="
+    width: 90%;
+    max-width: 800px;
+    margin: 20px auto;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    height: 600px;
+  "
+></div>
 
-    <!-- FullCalendar CSS -->
-    <link
-      href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.css"
-      rel="stylesheet"
-    />
+<!-- FullCalendar Bundle (core + plugins + locales) -->
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
 
-    <style>
-      body {
-        margin: 0;
-        padding: 0;
-        font-family: Arial, sans-serif;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        height: 100vh;
-        background: #f4f4f4;
-      }
-      #calendar {
-        width: 90%;
-        max-width: 800px;
-        background: #fff;
-        padding: 20px;
-        border-radius: 8px;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        height: 600px;
-      }
-    </style>
-  </head>
-  <body>
-    <div id="calendar"></div>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    // Gera JSON seguro a partir da lista events do Flask
+    var eventos = {{ events | tojson | safe }};
 
-    <!-- FullCalendar Bundle (core + plugins + locales) -->
-    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
+    new FullCalendar.Calendar(document.getElementById("calendar"), {
+      initialView: "dayGridMonth",
+      locale: "pt-br",
+      events: eventos
+    }).render();
+  });
+</script>
 
-    <script>
-      document.addEventListener("DOMContentLoaded", function () {
-        // Converte a lista Python em JSON para o JS
-        var eventos = {{ events | tojson }};
-
-        new FullCalendar.Calendar(
-          document.getElementById("calendar"),
-          {
-            initialView: "dayGridMonth",
-            locale: "pt-br",
-            events: eventos
-          }
-        ).render();
-      });
-    </script>
-  </body>
-</html>
+{% endblock %}

@@ -1,32 +1,27 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-  <head>
-    <meta charset="UTF-8" />
-    <title>Adicionar Cliente</title>
-  </head>
-  <body>
-    <h1>Novo Cliente</h1>
+{% extends 'base.html' %} {% block title %}Adicionar Cliente{% endblock %} {%
+block content %}
+<div style="max-width: 500px; margin: 20px auto">
+  <h1>Novo Cliente</h1>
 
-    <form method="POST" action="{{ url_for('home.add_client') }}">
-      <div>
-        <label for="name">Nome do Cliente:</label>
-        <input type="text" id="name" name="name" required />
-      </div>
-      <div>
-        <label for="phone">Telefone:</label>
-        <input type="text" id="phone" name="phone" />
-      </div>
-      <div>
-        <label for="address">Endereço:</label>
-        <input type="text" id="address" name="address" />
-      </div>
-      <br />
-      <button type="submit">Salvar Cliente</button>
-    </form>
-
+  <form method="POST" action="{{ url_for('home.add_client') }}">
+    <div>
+      <label for="name">Nome do Cliente:</label>
+      <input type="text" id="name" name="name" required />
+    </div>
+    <div>
+      <label for="phone">Telefone:</label>
+      <input type="text" id="phone" name="phone" />
+    </div>
+    <div>
+      <label for="address">Endereço:</label>
+      <input type="text" id="address" name="address" />
+    </div>
     <br />
-    <a href="{{ url_for('home.list_clients') }}"
-      >Voltar para Lista de Clientes</a
-    >
-  </body>
-</html>
+    <button type="submit">Salvar Cliente</button>
+  </form>
+
+  <br />
+  <a href="{{ url_for('home.list_clients') }}">Voltar para Lista de Clientes</a>
+</div>
+
+{% endblock %}
