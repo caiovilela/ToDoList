@@ -1,0 +1,89 @@
+{% extends 'base.html' %} {% block title %}Meus Serviços{% endblock %} {% block
+content %}
+<style>
+  /* Estilos copiados de tasks.html para consistência */
+  .tasks-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+    width: 90%;
+    max-width: 1200px;
+    margin: 20px auto 40px;
+  }
+
+  .task-card {
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    text-align: left;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  .task-card h2 {
+    margin: 0 0 8px 0;
+  }
+  .task-card p {
+    margin: 0 0 8px 0;
+    color: #555;
+  }
+  .links {
+    text-align: center;
+    margin: 20px 0;
+  }
+  .links a {
+    margin: 0 10px;
+  }
+</style>
+
+<h1 style="text-align: center; margin-top: 20px">
+  Serviços Atribuídos a {{ current_user.name }}
+</h1>
+
+<div class="links">
+  <a href="{{ url_for('home.list_done_tasks') }}"
+    >Ver Meus Serviços Concluídos</a
+  >
+  <a href="{{ url_for('home.calendar') }}">Ver Meu Calendário</a>
+</div>
+
+<div class="tasks-container">
+  {% for task in tasks %}
+  <div class="task-card">
+    <h2>{{ task.title }}</h2>
+    <p>{{ task.description }}</p>
+
+    {% if task.client %}
+    <p><strong>Cliente:</strong> {{ task.client.name }}</p>
+    {% if task.client.phone %}
+    <small>Telefone: {{ task.client.phone }}</small><br />
+    {% endif %} {% if task.client.address %}
+    <small>Endereço: {{ task.client.address }}</small>
+    {% endif %} {% else %}
+    <p><strong>Cliente:</strong> (Serviço Avulso)</p>
+    <small>Email: {{ task.author.email }}</small> {% endif %}
+    <br />
+
+    {% if task.date %}
+    <em>Data: {{ task.date.strftime('%d/%m/%Y') }}</em>
+    {% else %}
+    <em>Data: Não especificada</em>
+    {% endif %}
+    <br />
+
+    <strong>Status:</strong> {{ task.status }}
+
+    <div class="buttons" style="margin-top: 12px; display: flex; gap: 8px">
+      <a href="{{ url_for('home.edit_task', id=task.id) }}"
+        >Editar / Mudar Status</a
+      >
+    </div>
+  </div>
+  € {% else %} 　
+  <p style="text-align: center">Nenhum serviço pendente atribuído a você.</p>
+  {% endfor %}
+</div>
+
+{% endblock %}

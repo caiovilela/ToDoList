@@ -12,7 +12,8 @@
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
  "
 >
- <h1>Editar Serviço</h1>   <form action="{{ url_for('home.edit_task', id=task.id) }}" method="POST">
+ <h1>Editar Serviço</h1> 
+ <form action="{{ url_for('home.edit_task', id=task.id) }}" method="POST">
  <label for="title">Título:</label>
  <input
  type="text"
@@ -50,7 +51,20 @@
             Cancelado
         </option>
     </select>
-     <button type="submit">Salvar Alterações</button>
+
+    <label for="technician_id">Atribuir ao Técnico:</label>
+    <select name="technician_id" id="technician_id">
+      <option value="">-- Não atribuir --</option>
+      {% for tech in technicians %}
+      <option
+        value="{{ tech.id }}"
+        {% if task.technician_id == tech.id %}selected{% endif %}
+      >
+        {{ tech.name }}
+      </option>
+      {% endfor %}
+    </select>
+    <button type="submit">Salvar Alterações</button>
  </form>
   <br>
  <a href="{{ url_for('home.homepage') }}">Cancelar</a> </div>

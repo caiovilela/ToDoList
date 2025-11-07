@@ -85,6 +85,15 @@ block content %}
       </select>
     </div>
 
+    <div>
+      <label for="technician_id">Atribuir ao Técnico:</label>
+      <select name="technician_id" id="technician_id">
+        <option value="">-- Não atribuir --</option>
+        {% for tech in technicians %}
+        <option value="{{ tech.id }}">{{ tech.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
     <br />
     <button type="submit">Adicionar Serviço</button>
   </form>
@@ -101,6 +110,9 @@ block content %}
       {% else %}
       <br />
       <small>Cliente: (Serviço Avulso)</small>
+      {% endif %} {% if task.technician %}
+      <br />
+      <small>Atribuído a: {{ task.technician.name }}</small>
       {% endif %}
     </li>
     {% endfor %}

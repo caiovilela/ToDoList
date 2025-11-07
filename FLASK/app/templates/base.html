@@ -30,13 +30,17 @@
   </head>
   <body>
     <nav>
-      {% if current_user.is_authenticated %}
+      {% if current_user.is_authenticated %} {% if current_user.role == 'admin'
+      %}
       <a href="{{ url_for('home.homepage') }}">Home (Serviços)</a> |
       <a href="{{ url_for('home.list_clients') }}">Clientes</a> |
+      <a href="{{ url_for('home.equipe') }}">Equipe</a> | {% else %}
+      <a href="{{ url_for('home.homepage') }}">Meus Serviços</a> | {% endif %}
+
       <a href="{{ url_for('home.logout') }}">Sair</a>
+
       {% else %}
-      <a href="{{ url_for('home.login') }}">Login</a> |
-      <a href="{{ url_for('home.register') }}">Cadastrar</a>
+      <a href="{{ url_for('home.login') }}">Login</a>
       {% endif %}
     </nav>
     <hr />
