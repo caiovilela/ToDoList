@@ -93,4 +93,86 @@ Status: {task.status}
                     print(f"E-mail enviado para o ADMIN: {task.author.email}")
             except Exception as e:
                 print(f"Erro ao enviar email para o ADMIN: {str(e)}")
+        
+        if task.client and task.client.email:
+            client_subject = f"Lembrete de Serviço Agendado: {task.title}"
+            client_message = f"""Olá, {task.client.name}!
 
+Este é um lembrete de que seu serviço está agendado para hoje:
+
+Título: {task.title}
+Status: {task.status}
+Técnico: {task.technician.name if task.technician else 'A definir'}
+"""
+            
+            msg_client = EmailMessage()
+            msg_client['From'] = remetente
+            msg_client['To'] = task.client.email
+            msg_client['Subject'] = client_subject
+            msg_client.set_content(client_message)
+
+            try:
+                with smtplib.SMTP_SSL("smtp.gmail.com", 465) as email:
+                    print(f"Tentando enviar email para o CLIENTE: {task.client.email}")
+                    email.login(remetente, senha)
+                    print("Login realizado com sucesso")
+                    email.send_message(msg_client)
+                    print(f"E-mail enviado para o CLIENTE: {task.client.email}")
+            except Exception as e:
+                print(f"Erro ao enviar email para o CLIENTE: {str(e)}")
+
+
+
+
+def send_status_update_email(task):
+      
+   if not (task.client and task.client.email):
+       print(f"Tarefa {task.id} sem cliente ou sem e-mail de cliente. E-mail não enviado.")
+       return
+
+   remetente = "contatestebomar@gmail.com"
+   senha = "sdtj ynlh trby wara"
+
+   subject = ""
+   message_body = ""
+
+   if task.status == "Em Andamento":
+       subject = f"Serviço a caminho: {task.title}"
+       message_body = f"""Olá, {task.client.name}!
+
+Nosso técnico, {task.technician.name if task.technician else 'Nossa equipe'}, está a caminho do seu local para o serviço:
+
+Título: {task.title}
+
+Até breve!
+"""
+   elif task.status == "Concluído":
+       subject = f"Serviço Concluído: {task.title}"
+       message_body = f"""Olá, {task.client.name}!
+
+Seu serviço foi marcado como concluído:
+
+Título: {task.title}
+Comentários: {task.done_comment if task.done_comment else 'Nenhum'}
+
+Obrigado por estar com a Bom Ar!
+"""
+   else:
+       
+       return
+
+   
+   msg = EmailMessage()
+   msg['From'] = remetente
+   msg['To'] = task.client.email
+   msg['Subject'] = subject
+   msg.set_content(message_body)
+
+   try:
+       with smtplib.SMTP_SSL("smtp.gmail.com", 465) as email:
+           print(f"Disparando e-mail de status '{task.status}' para CLIENTE: {task.client.email}")
+           email.login(remetente, senha)
+           email.send_message(msg)
+           print(f"E-mail de status enviado para: {task.client.email}")
+   except Exception as e:
+       print(f"Erro ao disparar e-mail de status: {str(e)}")

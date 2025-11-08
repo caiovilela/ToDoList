@@ -11,6 +11,7 @@ class Client(db.Model):
     address = db.Column(db.String(200), nullable=True) 
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     tasks = db.relationship('Task', backref='client', lazy=True)
+    email = db.Column(db.String(100), nullable=True, unique=True)
 
     def __repr__(self):
         return f'<Client {self.name}>'
@@ -44,18 +45,9 @@ class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(100), unique=True, nullable=False)
     password = db.Column(db.String(100), nullable=False)
-    
-    
     name = db.Column(db.String(100), nullable=True) 
     role = db.Column(db.String(50), nullable=False, default='tecnico') 
-
-    # Tarefas que este usuário (admin) criou
     tasks = db.relationship('Task', backref='author', lazy=True, foreign_keys='[Task.user_id]')
-    
-    #  Clientes que este usuário (admin) criou
     clients = db.relationship('Client', backref='owner', lazy=True)
-
-    
-    # Tarefas que foram ATRIBUÍDAS a este usuário (técnico)
     assigned_tasks = db.relationship('Task', backref='technician', lazy=True, foreign_keys='[Task.technician_id]')
     

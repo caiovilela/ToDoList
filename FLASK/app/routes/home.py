@@ -19,10 +19,10 @@ def homepage():
     from app.models.task import Task, Client, User 
     db_instance = get_db()
     
-    # --- MUDANÇA: Lógica de Roteamento baseada em Role ---
+    
     
     if current_user.role == 'admin':
-        # O usuário é um ADMIN. Mostrar o dashboard principal.
+        
         
         stmt_tasks = db_instance.select(Task).filter_by(user_id=current_user.id)
         tasks = db_instance.session.scalars(stmt_tasks).all() 
@@ -36,19 +36,17 @@ def homepage():
         return render_template('home.html', tasks=tasks, clients=clients, technicians=technicians)
     
     else:
-        # O usuário é um TÉCNICO. Mostrar o dashboard do técnico.
         
-        # Buscar apenas tarefas onde o technician_id é o ID do técnico logado
         stmt_tasks = db_instance.select(Task).filter(
             Task.technician_id == current_user.id,
-            not_(Task.status.in_(['Concluído', 'Cancelado'])) # Mostrar apenas pendentes
+            not_(Task.status.in_(['Concluído', 'Cancelado'])) 
         ).order_by(Task.date)
         
         tasks = db_instance.session.scalars(stmt_tasks).all()
 
-        # Usaremos um novo template para o técnico
+        
         return render_template('technician_dashboard.html', tasks=tasks)
-    # --- FIM DA MUDANÇA ---
+    
 
 
 @home_bp.route('/tasks')
@@ -69,11 +67,11 @@ def list_tasks():
 @home_bp.route('/add', methods=['POST'])
 @login_required 
 def add_task():
-    # --- MUDANÇA DE SEGURANÇA (será melhorada no Passo 4) ---
+    
     if current_user.role != 'admin':
         flash('Acesso não autorizado.', 'danger')
         return redirect(url_for('home.homepage'))
-    # --- FIM DA MUDANÇA ---
+    
 
     from app.models.task import Task
     db_instance = get_db()
@@ -116,29 +114,32 @@ def add_task():
 @login_required 
 def edit_task(id):
     from app.models.task import Task, User
+    
+    from app.utils.email_utils import send_status_update_email
+    
+    
     db_instance = get_db()
     
     
-    stmt = db_instance.select(Task).filter_by(id=id) # Busca a tarefa
+    stmt = db_instance.select(Task).filter_by(id=id) 
     task = db_instance.session.scalar(stmt)
 
     if not task:
         return "Tarefa não encontrada", 404
         
-    # --- MUDANÇA: Lógica de Autorização (Passo 4) ---
-    # O Admin (dono) pode editar OU o Técnico (atribuído) pode editar
     if current_user.role == 'admin' and task.user_id != current_user.id:
         flash('Acesso não autorizado (Admin).', 'danger')
         return redirect(url_for('home.homepage'))
     elif current_user.role == 'tecnico' and task.technician_id != current_user.id:
         flash('Acesso não autorizado (Técnico).', 'danger')
         return redirect(url_for('home.homepage'))
-    # --- FIM DA MUDANÇA ---
 
 
     if request.method == 'POST':
         
-        # Apenas o admin pode mudar o título, descrição, data e técnico
+        
+        old_status = task.status
+        
         if current_user.role == 'admin':
             task.title = request.form.get('title')
             task.description = request.form.get('description')
@@ -157,29 +158,40 @@ def edit_task(id):
                 technician_id = None
             task.technician_id = technician_id
 
-        # Admin E Técnico podem mudar o status
-        task.status=request.form.get('status')
+        task.status = request.form.get('status')
+        new_status = task.status
 
-        db_instance.session.commit()
+        db_instance.session.commit() 
+        
+        
+        if new_status != old_status and (new_status == 'Em Andamento' or new_status == 'Concluído'):
+            try:
+                
+                send_status_update_email(task)
+            except Exception as e:
+                print(f"Falha ao tentar enviar e-mail de mudança de status: {e}")
+                
+
         flash('Serviço atualizado com sucesso.', 'success')
         return redirect(url_for('home.homepage'))
-
-    # --- Lógica GET (carregar técnicos para o admin) ---
+    
     technicians = []
     if current_user.role == 'admin':
         stmt_techs = db_instance.select(User).filter_by(role='tecnico').order_by(User.name)
         technicians = db_instance.session.scalars(stmt_techs).all()
-    
     return render_template('edit.html', task=task, technicians=technicians)
+
+   
+   
 
 @home_bp.route('/delete/<int:id>', methods=['GET'])
 @login_required 
 def delete_task(id):
-    # --- MUDANÇA DE SEGURANÇA ---
+    
     if current_user.role != 'admin':
         flash('Acesso não autorizado.', 'danger')
         return redirect(url_for('home.homepage'))
-    # --- FIM DA MUDANÇA ---
+    
 
     from app.models.task import Task
     db_instance = get_db()
@@ -205,13 +217,12 @@ def list_done_tasks():
     from app.models.task import Task
     db_instance = get_db()
     
-    # --- MUDANÇA DE LÓGICA ---
-    # Admin vê as suas concluídas, Técnico vê as dele concluídas
+  
     if current_user.role == 'admin':
         stmt = db_instance.select(Task).filter_by(user_id=current_user.id, status='Concluído')
     else:
         stmt = db_instance.select(Task).filter_by(technician_id=current_user.id, status='Concluído')
-    # --- FIM DA MUDANÇA ---
+    
     
     done_tasks = db_instance.session.scalars(stmt).all()
     
@@ -225,8 +236,7 @@ def calendar():
     from app.models.task import Task
     db_instance = get_db()
     
-    # --- MUDANÇA DE LÓGICA ---
-    # Admin vê o seu calendário, Técnico vê o dele
+    
     if current_user.role == 'admin':
         stmt = db_instance.select(Task).filter(
             Task.user_id == current_user.id,
@@ -239,7 +249,7 @@ def calendar():
             not_(Task.status.in_(['Concluído', 'Cancelado'])), 
             Task.date.isnot(None) 
         )
-    # --- FIM DA MUDANÇA ---
+   
 
     tasks = db_instance.session.scalars(stmt).all()
     
@@ -258,11 +268,11 @@ def calendar():
 @home_bp.route('/clients')
 @login_required
 def list_clients():
-    # --- MUDANÇA DE SEGURANÇA ---
+    
     if current_user.role != 'admin':
         flash('Acesso não autorizado.', 'danger')
         return redirect(url_for('home.homepage'))
-    # --- FIM DA MUDANÇA ---
+    
     
     from app.models.task import Client
     db_instance = get_db()
@@ -275,11 +285,11 @@ def list_clients():
 @home_bp.route('/client/<int:client_id>')
 @login_required
 def client_detail(client_id):
-    # --- MUDANÇA DE SEGURANÇA ---
+    
     if current_user.role != 'admin':
         flash('Acesso não autorizado.', 'danger')
         return redirect(url_for('home.homepage'))
-    # --- FIM DA MUDANÇA ---
+   
 
     from app.models.task import Client 
     db_instance = get_db()
@@ -299,11 +309,11 @@ def client_detail(client_id):
 @home_bp.route('/add_client', methods=['GET', 'POST'])
 @login_required
 def add_client():
-    # --- MUDANÇA DE SEGURANÇA ---
+    
     if current_user.role != 'admin':
         flash('Acesso não autorizado.', 'danger')
         return redirect(url_for('home.homepage'))
-    # --- FIM DA MUDANÇA ---
+    
     
     from app.models.task import Client
     db_instance = get_db()
@@ -313,7 +323,9 @@ def add_client():
         name = request.form.get('name')
         phone = request.form.get('phone')
         address = request.form.get('address')
-        
+
+
+        email = request.form.get('email')
       
         new_client = Client(name=name, 
                             phone=phone, 
