@@ -86,7 +86,28 @@ block content %}
     <h2>Equipe Cadastrada</h2>
     <ul>
       {% for tech in technicians %}
-      <li><strong>{{ tech.name }}</strong> ({{ tech.email }})</li>
+      <li
+        style="
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 10px;
+          padding: 10px;
+          background: #fff;
+          border: 1px solid #ddd;
+          border-radius: 4px;
+        "
+      >
+        <span><strong>{{ tech.name }}</strong> ({{ tech.email }})</span>
+
+        <a
+          href="{{ url_for('home.delete_user', user_id=tech.id) }}"
+          onclick="return confirm('Tem certeza? Todas as tarefas deste técnico ficarão sem atribuição.');"
+          style="color: red; text-decoration: none; font-weight: bold"
+        >
+          Excluir
+        </a>
+      </li>
       {% else %}
       <li>Nenhum técnico cadastrado ainda.</li>
       {% endfor %}

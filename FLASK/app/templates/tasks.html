@@ -65,6 +65,7 @@ block content %}
 
       <a
         href="{{ url_for('home.delete_task', id=task.id) }}"
+        onclick="return confirm('Tem certeza que deseja excluir este serviço?')"
         style="
           background: #dc3545;
           color: #fff;

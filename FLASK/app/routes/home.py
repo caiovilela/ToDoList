@@ -329,7 +329,8 @@ def add_client():
       
         new_client = Client(name=name, 
                             phone=phone, 
-                            address=address, 
+                            address=address,
+                            email=email, 
                             owner=current_user) 
         
         db_instance.session.add(new_client)
@@ -436,3 +437,36 @@ def logout():
     logout_user()
     flash('Você saiu do sistema.', 'info')
     return redirect(url_for('home.login'))
+
+
+@home_bp.route('/delete_user/<int:user_id>', methods=['GET'])
+@login_required
+def delete_user(user_id):
+    if current_user.role != 'admin':
+        flash('Acesso não autorizado', 'danger')
+        return redirect(url_for('home.homepage'))
+    
+    from app.models.task import User, Task
+    db_instance = get_db()
+
+    user_to_delete = db_instance.session.get(User, user_id)
+
+    if not user_to_delete:
+        flash('Usuário não encontrado.','danger')
+        return redirect(url_for('home.equipe'))
+    if user_to_delete.role == 'admin':
+        flash('Não é possível excluir um administrador','danger')
+        return redirect(url_for('home.equipe'))
+    
+
+    stmt_task = db_instance.select(Task).filter_by(technician_id=user_id)
+    tasks_assigned = db_instance.session.scalars(stmt_task).all()
+
+    for task in tasks_assigned:
+        task.technician_id = None
+
+    db_instance.session.delete(user_to_delete)
+    db_instance.session.commit()
+
+    flash(f'Técnico {user_to_delete.name} removido!','sucess')
+    return redirect(url_for('home.equipe'))
