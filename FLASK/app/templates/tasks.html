@@ -49,6 +49,7 @@ block content %}
   {% for task in tasks %}
   <div class="task-card">
     <h2>{{ task.title }}</h2>
+    <p>{{ task.client }}</p>
     <p>{{ task.description }}</p>
     {% if task.date %}
     <em>Data: {{ task.date.strftime('%d/%m/%Y') }}</em>
@@ -75,11 +76,9 @@ block content %}
         "
         >Excluir</a
       >
-         
     </div>
-     
   </div>
-    {% else %}  
+  {% else %}
   <p style="text-align: center">Nenhum serviço pendente encontrado.</p>
   {% endfor %}
 </div>

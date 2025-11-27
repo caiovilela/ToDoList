@@ -17,16 +17,41 @@ def get_db():
 @login_required 
 def homepage():
     from app.models.task import Task, Client, User 
+    from datetime import timedelta
+    from sqlalchemy import func
     db_instance = get_db()
-    
     
     
     if current_user.role == 'admin':
         
         
-        stmt_tasks = db_instance.select(Task).filter_by(user_id=current_user.id)
-        tasks = db_instance.session.scalars(stmt_tasks).all() 
+        query = db_instance.select(Task).filter_by(user_id=current_user.id)
+        
+        
+        filter_tech = request.args.get('technician_id')
+        if filter_tech:
+            query = query.filter(Task.technician_id == filter_tech)
+            
+        
+        filter_period = request.args.get('period')
+        today = datetime.now().date()
+        
+        if filter_period == 'today':
+           
+            query = query.filter(func.date(Task.date) == today)
+        elif filter_period == 'week':
+            
+            next_week = today + timedelta(days=7)
+            query = query.filter(Task.date >= today, Task.date <= next_week)
+        elif filter_period == 'late':
+            
+            query = query.filter(Task.date < today, not_(Task.status.in_(['Concluído', 'Cancelado'])))
 
+        
+        query = query.order_by(Task.date)
+        tasks = db_instance.session.scalars(query).all() 
+
+        
         stmt_clients = db_instance.select(Client).filter_by(owner=current_user).order_by(Client.name)
         clients = db_instance.session.scalars(stmt_clients).all()
         
@@ -41,12 +66,8 @@ def homepage():
             Task.technician_id == current_user.id,
             not_(Task.status.in_(['Concluído', 'Cancelado'])) 
         ).order_by(Task.date)
-        
         tasks = db_instance.session.scalars(stmt_tasks).all()
-
-        
         return render_template('technician_dashboard.html', tasks=tasks)
-    
 
 
 @home_bp.route('/tasks')
@@ -400,7 +421,36 @@ def add_tecnico():
         return redirect(url_for('home.equipe'))
 
 
+@home_bp.route('/edit_client/<int:client_id>', methods=['POST', 'GET'])
+@login_required
+def edit_client(client_id):
+    if current_user.role != "admin":
+        flash('Acesso não autorizado.','danger')
+        return redirect(url_for('home.homepage'))
+    
+    from app.models.task import Client
+    db_instance = get_db()
 
+    stmt = db_instance.select(Client).filter_by(id=client_id, owner=current_user)
+    client= db_instance.session.scalar(stmt)
+
+    if not client:
+        flash('Cliente não encontrado','danger')
+        return redirect(url_for('home.list_clients'))
+    if request.method == 'POST':
+        client.name = request.form.get('name')
+        client.email = request.form.get('email')
+        client.phone = request.form.get('phone')
+        client.address = request.form.get('adress')
+
+        try:
+            db_instance.session.commit()
+            flash('Dados do cliente atualizados com sucesso','sucesso')
+            return redirect(url_for('home.list_clients'))
+        except Exception as e:
+            db_instance.session.rollback()
+            flash('Erro ao atualizar.Verifique se o e-mail já existe.','danger')
+    return render_template('edit_client.html',client=client)
 
 
 
